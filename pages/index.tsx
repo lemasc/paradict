@@ -26,14 +26,14 @@ export default function Home() {
     }))
   }
   return (
-    <div className="p-8 flex flex-col gap-2 min-h-screen h-full justify-center items-center">
+    <div className="py-8 px-4 lg:px-6 flex flex-col gap-2 min-h-screen h-full justify-center items-center">
       <Head>
         <title>{showResults ? 'Search Results : ' : ''} ParaDict</title>
       </Head>
       <header className="head-font flex flex-col gap-4 items-center p-4 border-b border-gray-200">
         <h1 className="font-bold text-5xl text-blue-700">ParaDict</h1>
         <span className="text-gray-800 text-center">
-          Mini tool to help you search multiple words with ease.
+          Simple tool to help you search multiple words meaning with ease.
         </span>
       </header>
       <main className="flex flex-col gap-4 p-4 max-w-2xl w-full">
@@ -66,7 +66,7 @@ export default function Home() {
           This website was made for educational purposes only.
         </p>
         <span className="py-2">
-          Made possible by{' '}
+          Powered by{' '}
           <a
             href="https://dict.longdo.com"
             rel="noreferrer noopener"

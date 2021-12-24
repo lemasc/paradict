@@ -62,51 +62,52 @@ export default function SearchInput({
       <span className="text-center">
         Enter your words to search here. Press Enter or Return key to add a new field.
       </span>
-      <div className="flex flex-col xl:overflow-y-auto p-2 space-y-4">
+      <ul className="overflow-y-auto min-w-full flex flex-col xl:overflow-y-auto py-2 space-y-4">
         {fields.map((item, index) => {
           return (
-            <ul key={item.id} className="">
-              <li className="flex gap-4 items-center overflow-y-auto min-w-full">
-                <span className="font-bold">#{index + 1}</span>
-                <input
-                  placeholder="Enter your word..."
-                  autoComplete="off"
-                  className="border border-gray-300 rounded-md focus:outline-1 focus:outline-blue-500 focus:ring-1 px-3 py-2"
-                  onKeyUp={(e) => {
-                    // keyCode is deprecated.
-                    // Although their docs recommended using code instead, it returns undefined on Chrome Android.
-                    // 13 = Enter
-                    if (e.keyCode === 13) {
-                      e.preventDefault()
-                      add(index)
-                    }
-                  }}
-                  type="text"
-                  {...register(`words.${index}.search`)}
-                />
+            <li key={item.id} className="flex gap-4 items-center">
+              <span className="font-bold">#{index + 1}</span>
+              <input
+                placeholder="Enter your word..."
+                autoComplete="off"
+                className="border border-gray-300 rounded-md focus:outline-1 focus:outline-blue-500 focus:ring-1 px-3 py-2"
+                onKeyUp={(e) => {
+                  // keyCode is deprecated.
+                  // Although their docs recommended using code instead, it returns undefined on Chrome Android.
+                  // 13 = Enter
+                  if (e.keyCode === 13) {
+                    e.preventDefault()
+                    add(index)
+                  }
+                }}
+                type="text"
+                {...register(`words.${index}.search`)}
+              />
+              <button
+                className="rounded p-2 bg-green-500 text-white"
+                type="button"
+                title="Add a new word"
+                onClick={() => add(index)}
+              >
+                <PlusIcon className="h-5 w-5" />
+              </button>
+              {index !== 0 && (
                 <button
-                  className="rounded p-2 bg-green-500 text-white"
+                  className="rounded p-2 bg-red-500 text-white"
                   type="button"
-                  title="Add a new word"
-                  onClick={() => add(index)}
+                  title="Remove the current word"
+                  onClick={() => remove(index)}
                 >
-                  <PlusIcon className="h-5 w-5" />
+                  <MinusIcon className="h-5 w-5" />
                 </button>
-                {index !== 0 && (
-                  <button
-                    className="rounded p-2 bg-red-500 text-white"
-                    type="button"
-                    title="Remove the current word"
-                    onClick={() => remove(index)}
-                  >
-                    <MinusIcon className="h-5 w-5" />
-                  </button>
-                )}
-              </li>
-            </ul>
+              )}
+            </li>
           )
         })}
-      </div>
+      </ul>
+      <span className="xs:hidden text-center text-blue-500">
+        Swipe to see available input options.
+      </span>
       <button
         onClick={handleSubmit(onSubmit)}
         className="inline btn bg-blue-500 hover:bg-blue-600 text-white"

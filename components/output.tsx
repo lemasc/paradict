@@ -72,7 +72,7 @@ function SearchResult(word: WordsRequest) {
                 <div className="flex flex-col gap-2">
                   {data.data.map((d) => (
                     <>
-                      <span className="font-medium">Defintions from {d.dict}</span>
+                      <span className="font-medium text-green-800">Defintions from {d.dict}</span>
                       <ul className="text-sm text-gray-600 space-y-2 list-disc list-inside">
                         {d.results.map((w, i) => (
                           <li key={i}>{w}</li>
@@ -82,7 +82,7 @@ function SearchResult(word: WordsRequest) {
                   ))}
                 </div>
               ) : (
-                "We couldn't find any results."
+                <span className="text-red-800">We couldn&apos;t find any results.</span>
               )}
             </Disclosure.Panel>
           </>
