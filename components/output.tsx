@@ -1,10 +1,14 @@
-import Head from 'next/head'
 import { Fragment, useEffect, useState } from 'react'
-import SearchInput from '../components/input'
 import { SearchAPIRequest, SearchAPIResult, WordsRequest } from '../types/dict'
 import { Disclosure } from '@headlessui/react'
 import { ChevronUpIcon, XIcon } from '@heroicons/react/solid'
-import axios from 'axios'
+import { default as _axios } from 'axios'
+import { ConcurrencyManager } from '../shared/axios-concurrency'
+
+const axios = _axios.create({})
+
+const MAX_CONCURRENT_REQUESTS = 5
+ConcurrencyManager(axios, MAX_CONCURRENT_REQUESTS)
 
 function SearchResult(word: WordsRequest) {
   const [data, setData] = useState<SearchAPIResult | undefined>()
@@ -72,7 +76,7 @@ function SearchResult(word: WordsRequest) {
                 <div className="flex flex-col gap-2">
                   {data.data.map((d) => (
                     <>
-                      <span className="font-medium text-green-800">Defintions from {d.dict}</span>
+                      <span className="font-medium text-green-800">Definitions from {d.dict}</span>
                       <ul className="text-sm text-gray-600 space-y-2 list-disc list-inside">
                         {d.results.map((w, i) => (
                           <li key={i}>{w}</li>
@@ -99,20 +103,24 @@ export default function SearchOutput({
   data: SearchAPIRequest
   onGoBack: () => void
 }) {
+  const ClearButton = () => (
+    <div className="flex flex-col items-center justify-center">
+      <button onClick={onGoBack} className="btn inline text-sm bg-gray-200 hover:bg-gray-300">
+        <XIcon className="inline -mt-1 mr-2 h-4 w-4" />
+        Clear Search Results
+      </button>
+    </div>
+  )
   return (
     <>
       <h2 className="text-center font-medium">Search Results</h2>
-      <div className="flex flex-col items-center justify-center">
-        <button onClick={onGoBack} className="btn inline text-sm bg-gray-200 hover:bg-gray-300">
-          <XIcon className="inline -mt-1 mr-2 h-4 w-4" />
-          Clear Search Results
-        </button>
-      </div>
+      <ClearButton />
       <div className="w-full space-y-6">
         {data.words?.map((word) => (
           <SearchResult key={word.search} {...word} />
         ))}
       </div>
+      <ClearButton />
     </>
   )
 }

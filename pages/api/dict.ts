@@ -3,6 +3,21 @@ import { JSDOM } from 'jsdom'
 import axios from 'axios'
 import { Dictionary, SearchAPIResult } from '../../types/dict'
 
+/**
+ * Hope Dictionary returns a very long definition string.
+ * Seperate and format it ourselves.
+ */
+const processHopeDict = (definition: string): string[] => {
+  const partOfSpeech = /([a-z])\.+/
+  return definition.split(' ').reduce((data, define) => {
+    if (partOfSpeech.test(define)) {
+      data.push(`(${define})`)
+    } else if (data.length !== 0) {
+      data[data.length - 1] = data[data.length - 1] + ' ' + define
+    }
+    return data
+  }, [])
+}
 const getNameFromResultTable = (table: HTMLTableElement, documentChildren: Element[]) => {
   return documentChildren[documentChildren.indexOf(table) - 1].innerHTML
 }
@@ -43,7 +58,7 @@ const handler: NextApiHandler<SearchAPIResult> = async (req, res) => {
       if (results.length === 0) return null
       return {
         dict,
-        results: results.map((d) => d[1]),
+        results: dict.includes('Hope') ? processHopeDict(results[0][1]) : results.map((d) => d[1]),
       }
     })
     .filter((r) => r !== null)

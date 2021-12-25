@@ -36,7 +36,7 @@ export default function Home() {
           Simple tool to help you search multiple words meaning with ease.
         </span>
       </header>
-      <main className="flex flex-col gap-4 p-4 max-w-2xl w-full">
+      <main className={`flex flex-col gap-4 p-4 ${showResults ? 'max-w-2xl' : 'max-w-xl'} w-full`}>
         {!showResults ? (
           <SearchInput
             onSubmit={(results) => {

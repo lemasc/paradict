@@ -62,11 +62,13 @@ export default function SearchInput({
       <span className="text-center">
         Enter your words to search here. Press Enter or Return key to add a new field.
       </span>
-      <ul className="overflow-y-auto min-w-full flex flex-col xl:overflow-y-auto py-2 space-y-4">
+      <ul className="overflow-y-auto min-w-full flex flex-col items-center py-2 space-y-4">
         {fields.map((item, index) => {
           return (
             <li key={item.id} className="flex gap-4 items-center">
-              <span className="font-bold">#{index + 1}</span>
+              <span className="font-bold" style={{ minWidth: '1.75rem' }}>
+                #{index + 1}
+              </span>
               <input
                 placeholder="Enter your word..."
                 autoComplete="off"
@@ -83,24 +85,26 @@ export default function SearchInput({
                 type="text"
                 {...register(`words.${index}.search`)}
               />
-              <button
-                className="rounded p-2 bg-green-500 text-white"
-                type="button"
-                title="Add a new word"
-                onClick={() => add(index)}
-              >
-                <PlusIcon className="h-5 w-5" />
-              </button>
-              {index !== 0 && (
+              <div className="grid grid-cols-2 gap-4">
                 <button
-                  className="rounded p-2 bg-red-500 text-white"
+                  className="rounded p-2 bg-green-500 text-white"
                   type="button"
-                  title="Remove the current word"
-                  onClick={() => remove(index)}
+                  title="Add a new word"
+                  onClick={() => add(index)}
                 >
-                  <MinusIcon className="h-5 w-5" />
+                  <PlusIcon className="h-5 w-5" />
                 </button>
-              )}
+                {index !== 0 && (
+                  <button
+                    className="rounded p-2 bg-red-500 text-white"
+                    type="button"
+                    title="Remove the current word"
+                    onClick={() => remove(index)}
+                  >
+                    <MinusIcon className="h-5 w-5" />
+                  </button>
+                )}
+              </div>
             </li>
           )
         })}
