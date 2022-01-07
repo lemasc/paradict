@@ -24,7 +24,7 @@ export function AutocompleteResults({
         await preload(search as string)
         setLastWord(search)
       }
-    }, 400)
+    }, 200)
   }, [search, preload])
   const getResult = () => results.get(search) ?? results.get(lastWord)
 
