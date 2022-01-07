@@ -71,6 +71,7 @@ export default function AutoCompleteInput({
         <Listbox value={value} onChange={onChange}>
           <div className="relative mt-1 flex-grow">
             <Listbox.Button
+              //@ts-expect-error HTML Tag cannot be used in as prop
               as={'input'}
               value={value as string}
               {...props}
