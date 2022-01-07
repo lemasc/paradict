@@ -1,7 +1,9 @@
 import { MinusIcon, PlusIcon, SearchIcon, TrashIcon } from '@heroicons/react/solid'
 import { useFieldArray, useForm } from 'react-hook-form'
-import { SearchAPIRequest } from '../types/dict'
+import { SearchAPIRequest } from '../../types/dict'
 import { useBeforeunload } from 'react-beforeunload'
+import axios from 'axios'
+import AutoCompleteInput from './autocomplete'
 
 export default function SearchInput({
   onSubmit: _onSubmit,
@@ -57,23 +59,28 @@ export default function SearchInput({
   }
 
   useBeforeunload((e) => touchedFields.length !== 0 && e.preventDefault())
+
   return (
     <>
       <span className="text-center">
         Enter your words to search here. Press Enter or Return key to add a new field.
       </span>
-      <ul className="overflow-y-auto min-w-full flex flex-col items-center py-2 space-y-4">
+      <ul className="w-full py-2 space-y-4">
         {fields.map((item, index) => {
           return (
             <li key={item.id} className="flex gap-4 items-center">
               <span className="font-bold" style={{ minWidth: '1.75rem' }}>
                 #{index + 1}
               </span>
-              <input
-                placeholder="Enter your word..."
+              <AutoCompleteInput
+                controller={{
+                  name: `words.${index}.search`,
+                  control,
+                }}
+                type="text"
                 autoComplete="off"
-                className="border border-gray-300 rounded-md focus:outline-1 focus:outline-blue-500 focus:ring-1 px-3 py-2"
-                onKeyUp={(e) => {
+                placeholder="Enter your word..."
+                onKeyDown={(e) => {
                   // keyCode is deprecated.
                   // Although their docs recommended using code instead, it returns undefined on Chrome Android.
                   // 13 = Enter
@@ -82,10 +89,9 @@ export default function SearchInput({
                     add(index)
                   }
                 }}
-                type="text"
-                {...register(`words.${index}.search`)}
+                className="w-full border border-gray-300 rounded-md focus:outline-1 focus:outline-blue-500 focus:ring-1 px-3 py-2"
               />
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 flex-shrink-0">
                 <button
                   className="rounded p-2 bg-green-500 text-white"
                   type="button"
@@ -110,7 +116,7 @@ export default function SearchInput({
         })}
       </ul>
       <span className="xs:hidden text-center text-blue-500">
-        Swipe to see available input options.
+        Swipe left-right to see available input options.
       </span>
       <button
         onClick={handleSubmit(onSubmit)}

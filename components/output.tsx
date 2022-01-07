@@ -10,7 +10,7 @@ const axios = _axios.create({})
 const MAX_CONCURRENT_REQUESTS = 5
 ConcurrencyManager(axios, MAX_CONCURRENT_REQUESTS)
 
-function SearchResult(word: WordsRequest) {
+function SearchResult(word: WordsRequest & { index: number }) {
   const [data, setData] = useState<SearchAPIResult | undefined>()
 
   const [success, setSuccess] = useState<boolean | undefined>()
@@ -26,7 +26,7 @@ function SearchResult(word: WordsRequest) {
         setSuccess(true)
       } catch (err) {
         setSuccess(false)
-        console.log(err)
+        console.error(err)
       } finally {
         loading = false
       }
@@ -40,10 +40,24 @@ function SearchResult(word: WordsRequest) {
     }
   }, [data, word.search])
 
+  const baseClasses = {
+    wrapper:
+      'flex items-center space-x-4 w-full px-4 py-2 text-sm font-medium text-left rounded-lg focus:outline-none focus-visible:ring',
+  }
+  const WordTitle = () => (
+    <h4 className="text-lg flex-grow head-font">
+      {word.index + 1}. {word.search}
+    </h4>
+  )
   if (success === undefined)
     return (
-      <div className="flex items-center space-x-4 w-full px-4 py-2 text-sm font-medium text-left text-blue-900 bg-blue-100 rounded-lg focus:outline-none focus-visible:ring focus-visible:ring-blue-500 focus-visible:ring-opacity-75">
-        <h4 className="text-lg flex-grow head-font">{word.search}</h4>
+      <div
+        className={[
+          baseClasses.wrapper,
+          'text-blue-900 bg-blue-100 focus-visible:ring-blue-500',
+        ].join(' ')}
+      >
+        <WordTitle />
         <span>Loading...</span>
       </div>
     )
@@ -54,15 +68,14 @@ function SearchResult(word: WordsRequest) {
           <>
             <Disclosure.Button as={Fragment}>
               <button
-                className={`flex items-center space-x-4 w-full px-4 py-2 text-sm font-medium text-left ${
-                  success ? 'text-green-900 bg-green-100' : 'text-red-900 bg-red-100'
-                } rounded-lg ${
-                  success ? 'hover:bg-green-200' : 'hover:bg-red-200'
-                } focus:outline-none focus-visible:ring ${
-                  success ? 'focus-visible:ring-green-500' : 'focus-visible:ring-red-500'
-                } focus-visible:ring-opacity-75`}
+                className={[
+                  baseClasses.wrapper,
+                  success
+                    ? 'text-green-900 bg-green-100 hover:bg-green-200 focus-visible:ring-green-500'
+                    : 'text-red-900 bg-red-100 hover:bg-red-200 focus-visible:ring-red-500',
+                ].join(' ')}
               >
-                <h4 className="text-lg flex-grow head-font">{word.search}</h4>
+                <WordTitle />
                 <span>{success ? 'Success' : 'Failed'}</span>
                 <ChevronUpIcon
                   className={`${open ? 'transform rotate-180' : ''} w-5 h-5 ${
@@ -116,8 +129,8 @@ export default function SearchOutput({
       <h2 className="text-center font-medium">Search Results</h2>
       <ClearButton />
       <div className="w-full space-y-6">
-        {data.words?.map((word) => (
-          <SearchResult key={word.search} {...word} />
+        {data.words?.map((word, i) => (
+          <SearchResult index={i} key={word.search} {...word} />
         ))}
       </div>
       <ClearButton />

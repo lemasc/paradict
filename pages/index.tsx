@@ -10,6 +10,7 @@ export default function Home() {
   const [showResults, setShowResults] = useState(false)
 
   useEffect(() => {
+    window.scrollTo(0, 0)
     if (router.query?.search) {
       setShowResults(true)
     } else {
@@ -57,15 +58,15 @@ export default function Home() {
         )}
       </main>
 
-      <footer className="head-font text-sm py-2 text-center text-gray-600">
-        <p className="pb-4">
+      <footer className="items-center justify-center flex flex-col head-font text-sm py-4 text-center text-gray-600 space-y-4">
+        <p>
           Copyright &copy; 2021
-          {new Date().getFullYear() !== 2021 && `- ${new Date().getFullYear()}`} Lemasc Service Co.,
+          {new Date().getFullYear() !== 2021 && `-${new Date().getFullYear()}`} Lemasc Service Co.,
           ltd
           <br />
           This website was made for educational purposes only.
         </p>
-        <span className="py-2">
+        <span>
           Powered by{' '}
           <a
             href="https://dict.longdo.com"
@@ -74,6 +75,17 @@ export default function Home() {
             className="text-blue-600 hover:text-blue-800 underline"
           >
             Longdo Dictionary
+          </a>
+        </span>
+        <span className="flex flex-row gap-4 pt-2 content-font">
+          <span>Version 1.2 (20220108)</span>
+          <a
+            href="https://github.com/lemasc/paradict/blob/main/CHANGELOG.md"
+            rel="noreferrer noopener"
+            target="_blank"
+            className="text-gray-600 hover:text-gray-800 underline"
+          >
+            Change log
           </a>
         </span>
       </footer>

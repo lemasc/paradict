@@ -32,9 +32,25 @@ const isAllowedLanguage = (d: string[]) => {
   )
 }
 
+/**
+ * Process each defintion by removing `See also:` and `Syn.` records.
+ * @param define The definition string
+ */
+const processDefinition = (define: string) => {
+  for (let _kw of ['See also:', 'Syn.']) {
+    // Add seperator
+    const kw = `, ${_kw}`
+    if (define.indexOf(kw) !== -1) return define.slice(0, define.indexOf(kw)).trim()
+  }
+  return define.trim()
+}
 const processTable = (table: HTMLTableElement, baseWord: string) => {
   return Array.from(table.rows)
-    .map((row) => Array.from(row.cells).map((cell) => cell.textContent))
+    .map((row) =>
+      Array.from(row.cells).map((cell, i) =>
+        i === 1 ? processDefinition(cell.textContent) : cell.textContent
+      )
+    )
     .filter((d) => baseWord === d[0] && isAllowedLanguage(d))
 }
 
@@ -63,7 +79,7 @@ const handler: NextApiHandler<SearchAPIResult> = async (req, res) => {
     })
     .filter((r) => r !== null)
 
-  res.setHeader('cache-control', 'public, max-age=300, stale-while-revalidate=600')
+  res.setHeader('cache-control', `public, max-age=${86400 / 2}, stale-while-revalidate=86400`)
   res.status(results.length === 0 ? 404 : 200).send({
     word: search,
     data: results,
