@@ -12,7 +12,7 @@ type RawResponse = {
 }
 
 const processLabel = (r: RawResponse) => {
-  return r.d.replace(/(<FONT color=blue>)|(<\/FONT>)/g, '**').replaceAll('****', '')
+  return r.d.replace(/(<FONT color=blue>)|(<\/FONT>)/g, '**').replace(/\*\*\*\*/g, '')
 }
 const handler: NextApiHandler<SelectOption[]> = async (req, res) => {
   if (!req.query.search || req.method !== 'GET') return res.status(400).end()
