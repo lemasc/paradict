@@ -1,5 +1,8 @@
 # ParaDict ChangeLog
 
+## v1.3 (20200123)
+- feat: Use cached results from recent words.
+
 ## v1.2 (20220108)
 - feat: Add autocomplete function.
 - fix: definition with `See also` field not parsing properly.

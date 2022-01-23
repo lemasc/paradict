@@ -19,6 +19,15 @@ function useProvideSearch(): ISearchContext {
   const [results, setResults] = useState<Map<string, SelectOption[]>>(new Map())
   const preload = async (key: string) => {
     if (results.has(key)) return
+    // We provide the cached results from recent words for faster performance.
+    const existingResults = Array.from(results.values())
+      .map((d) => d.filter((s) => s.value.startsWith(key)))
+      .flat()
+    if (existingResults.length > 0) {
+      setResults((results) => {
+        return new Map(results).set(key, existingResults)
+      })
+    }
     try {
       const { data } = await axios.get('/api/autocomplete?search=' + key)
       setResults((results) => {
