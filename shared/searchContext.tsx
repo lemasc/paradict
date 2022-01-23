@@ -15,14 +15,29 @@ export const useSearch = (): ISearchContext => {
   return ctx
 }
 
+/**
+ * Remove duplicate values (words) from the cached select results.
+ * If we didn't remove, React keys might be duplicated and cause unexpected bug.
+ */
+const removeDuplicateWords = (data: SelectOption[]): SelectOption[] => {
+  const results = new Map<string, string>()
+  data.map((d) => results.set(d.value, d.label))
+  return Array.from(results.entries()).map((d) => ({
+    label: d[1],
+    value: d[0],
+  }))
+}
+
 function useProvideSearch(): ISearchContext {
   const [results, setResults] = useState<Map<string, SelectOption[]>>(new Map())
   const preload = async (key: string) => {
     if (results.has(key)) return
     // We provide the cached results from recent words for faster performance.
-    const existingResults = Array.from(results.values())
-      .map((d) => d.filter((s) => s.value.startsWith(key)))
-      .flat()
+    const existingResults = removeDuplicateWords(
+      Array.from(results.values())
+        .map((d) => d.filter((s) => s.value.startsWith(key)))
+        .flat()
+    )
     if (existingResults.length > 0) {
       setResults((results) => {
         return new Map(results).set(key, existingResults)
