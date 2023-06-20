@@ -34,11 +34,16 @@ const handler: NextApiHandler<SelectOption[]> = async (req, res) => {
     data.slice(data.indexOf('['), data.lastIndexOf(']') + 1).replace(/\r?\n|\r/g, '')
   )
   res.setHeader('cache-control', `public, max-age=${86400 / 2}, stale-while-revalidate=86400`)
-  res.status(200).send(
-    results.map((r) => ({
-      label: processLabel(r),
+
+  const resultsMap = new Map<string, SelectOption>()
+  results.forEach((r) => {
+    const label = processLabel(r)
+    resultsMap.set(label.toLowerCase(), {
+      label,
       value: r.w,
-    }))
-  )
+    })
+  })
+
+  res.status(200).send(Array.from(resultsMap.values()))
 }
 export default handler

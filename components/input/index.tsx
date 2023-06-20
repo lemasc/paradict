@@ -4,6 +4,7 @@ import { SearchAPIRequest } from '../../types/dict'
 import { useBeforeunload } from 'react-beforeunload'
 import axios from 'axios'
 import AutoCompleteInput from './autocomplete'
+import { useRef, useState } from 'react'
 
 export default function SearchInput({
   onSubmit: _onSubmit,
@@ -13,7 +14,9 @@ export default function SearchInput({
   const defaultValues = {
     words: [{ search: '' }],
   }
-  const { register, control, handleSubmit, reset, watch } = useForm<SearchAPIRequest>({
+  const [focusedIndex, setFocusedIndex] = useState(0)
+  const inputArrayRefs = useRef<HTMLInputElement[]>([])
+  const { control, handleSubmit, reset, watch } = useForm<SearchAPIRequest>({
     defaultValues,
   })
   const wordsWatch = watch('words')
@@ -34,18 +37,28 @@ export default function SearchInput({
     }
   }
 
-  const add = (index) =>
+  const add = (index: number) => {
     insert(index + 1, {
       search: '',
     })
+    setTimeout(() => {
+      // move focus to the next input
+      inputArrayRefs.current[index + 1]?.focus()
+    }, 10)
+  }
 
-  const remove = (index) => {
+  const remove = (index: number) => {
     if (
       wordsWatch[index].search !== '' &&
       !confirm('This field contains value. Are you sure to remove?')
     )
       return
     _remove(index)
+
+    setTimeout(() => {
+      // move focus to the previous input if exists
+      inputArrayRefs.current[index - 1]?.focus()
+    }, 10)
   }
 
   const touchedFields = wordsWatch.filter((w) => w.search !== '')
@@ -68,7 +81,7 @@ export default function SearchInput({
       <ul className="w-full py-2 space-y-4">
         {fields.map((item, index) => {
           return (
-            <li key={item.id} className="flex gap-4 items-center">
+            <li id={`search_input_${index}`} key={item.id} className="flex gap-4 items-center">
               <span className="font-bold" style={{ minWidth: '1.75rem' }}>
                 #{index + 1}
               </span>
@@ -80,6 +93,7 @@ export default function SearchInput({
                 type="text"
                 autoComplete="off"
                 placeholder="Enter your word..."
+                ref={(el) => (inputArrayRefs.current[index] = el)}
                 onKeyDown={(e) => {
                   // keyCode is deprecated.
                   // Although their docs recommended using code instead, it returns undefined on Chrome Android.
@@ -89,6 +103,8 @@ export default function SearchInput({
                     add(index)
                   }
                 }}
+                onFocus={() => setFocusedIndex(index)}
+                canShow={focusedIndex === index}
                 className="w-full border border-gray-300 rounded-md focus:outline-1 focus:outline-blue-500 focus:ring-1 px-3 py-2"
               />
               <div className="grid grid-cols-2 gap-4 flex-shrink-0">
@@ -97,6 +113,7 @@ export default function SearchInput({
                   type="button"
                   title="Add a new word"
                   onClick={() => add(index)}
+                  tabIndex={-1}
                 >
                   <PlusIcon className="h-5 w-5" />
                 </button>
@@ -106,6 +123,7 @@ export default function SearchInput({
                     type="button"
                     title="Remove the current word"
                     onClick={() => remove(index)}
+                    tabIndex={-1}
                   >
                     <MinusIcon className="h-5 w-5" />
                   </button>

@@ -1,5 +1,13 @@
-import { Listbox, Transition } from '@headlessui/react'
-import { Fragment, HTMLProps, useEffect, useRef, useState } from 'react'
+import { Combobox, Transition } from '@headlessui/react'
+import {
+  FocusEventHandler,
+  forwardRef,
+  Fragment,
+  HTMLProps,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import { ControllerProps, Controller, useWatch, UseControllerProps } from 'react-hook-form'
 import { useSearch } from '../../shared/searchContext'
 import { SearchAPIRequest } from '../../types/dict'
@@ -32,7 +40,7 @@ export function AutocompleteResults({
     return (
       <div className="z-10 absolute w-full py-1 mt-1 overflow-auto bg-white rounded-md shadow-xl max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none">
         {getResult().map((d) => (
-          <Listbox.Option
+          <Combobox.Option
             key={d.value}
             className={({ active }) =>
               `${active ? 'text-blue-900 bg-blue-200' : 'text-gray-900'}
@@ -52,7 +60,7 @@ export function AutocompleteResults({
             >
               {d.label}
             </Remark>
-          </Listbox.Option>
+          </Combobox.Option>
         ))}
       </div>
     )
@@ -60,29 +68,41 @@ export function AutocompleteResults({
   return null
 }
 
-export default function AutoCompleteInput({
-  controller,
-  ...props
-}: HTMLProps<HTMLInputElement> & { controller: UseControllerProps<SearchAPIRequest> }) {
+type Props = HTMLProps<HTMLInputElement> & {
+  controller: UseControllerProps<SearchAPIRequest>
+  canShow: boolean
+}
+
+export default forwardRef<HTMLInputElement, Props>(function AutoCompleteInput(
+  { controller, canShow, ...props },
+  ref
+) {
   return (
     <Controller
       {...controller}
       render={({ field: { onChange, value } }) => (
-        <Listbox value={value} onChange={onChange}>
-          <div className="relative mt-1 flex-grow">
-            <Listbox.Button
-              //@ts-expect-error HTML Tag cannot be used in as prop
-              as={'input'}
-              value={value as string}
-              {...props}
-              //className="relative w-full py-2 pl-3 pr-10 text-left bg-white rounded-lg shadow-md cursor-default focus:outline-none focus-visible:ring-2 focus-visible:ring-opacity-75 focus-visible:ring-white focus-visible:ring-offset-orange-300 focus-visible:ring-offset-2 focus-visible:border-indigo-500 sm:text-sm"
-            />
-            <Listbox.Options>
-              <AutocompleteResults control={controller.control} name={controller.name} />
-            </Listbox.Options>
-          </div>
-        </Listbox>
+        <Combobox value={value} onChange={onChange}>
+          {({ open }) => (
+            <div className="relative mt-1 flex-grow">
+              <Combobox.Input
+                // @ts-expect-error
+                as={'input'}
+                value={value}
+                onChange={onChange}
+                // @ts-expect-error
+                ref={ref}
+                {...props}
+                //className="relative w-full py-2 pl-3 pr-10 text-left bg-white rounded-lg shadow-md cursor-default focus:outline-none focus-visible:ring-2 focus-visible:ring-opacity-75 focus-visible:ring-white focus-visible:ring-offset-orange-300 focus-visible:ring-offset-2 focus-visible:border-indigo-500 sm:text-sm"
+              />
+              {open && canShow && (
+                <Combobox.Options static>
+                  <AutocompleteResults control={controller.control} name={controller.name} />
+                </Combobox.Options>
+              )}
+            </div>
+          )}
+        </Combobox>
       )}
     />
   )
-}
+})
