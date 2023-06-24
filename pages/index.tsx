@@ -29,7 +29,7 @@ export default function Home() {
   return (
     <div className="py-8 px-4 lg:px-6 flex flex-col gap-2 min-h-screen h-full justify-center items-center">
       <Head>
-        <title>{showResults ? 'Search Results : ' : ''} ParaDict</title>
+        <title>{`${showResults ? 'Search Results : ' : ''} ParaDict`}</title>
       </Head>
       <header className="head-font flex flex-col gap-4 items-center p-4 border-b border-gray-200">
         <h1 className="font-bold text-5xl text-blue-700">ParaDict</h1>
@@ -78,7 +78,7 @@ export default function Home() {
           </a>
         </span>
         <span className="flex flex-row gap-4 pt-2 content-font">
-          <span>Version 1.3 (20220123)</span>
+          <span>Version 2.0 (20230624)</span>
           <a
             href="https://github.com/lemasc/paradict/blob/main/CHANGELOG.md"
             rel="noreferrer noopener"

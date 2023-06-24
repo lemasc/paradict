@@ -1,7 +1,11 @@
-import { NextApiHandler } from 'next'
-import { JSDOM } from 'jsdom'
-import axios from 'axios'
+import { NextRequest, NextResponse } from 'next/server'
+import { parseHTML } from 'linkedom/worker'
+import ky from 'ky'
 import { Dictionary, SearchAPIResult } from '../../types/dict'
+
+export const config = {
+  runtime: 'edge',
+}
 
 /**
  * Hope Dictionary returns a very long definition string.
@@ -17,9 +21,6 @@ const processHopeDict = (definition: string): string[] => {
     }
     return data
   }, [])
-}
-const getNameFromResultTable = (table: HTMLTableElement, documentChildren: Element[]) => {
-  return documentChildren[documentChildren.indexOf(table) - 1].innerHTML
 }
 
 const isAllowedLanguage = (d: string[]) => {
@@ -45,45 +46,62 @@ const processDefinition = (define: string) => {
   return define.trim()
 }
 const processTable = (table: HTMLTableElement, baseWord: string) => {
-  return Array.from(table.rows)
-    .map((row) =>
-      Array.from(row.cells).map((cell, i) =>
+  const rows = table.querySelectorAll('tr')
+  return Array.from(rows)
+    .map((row) => {
+      const cells = row.querySelectorAll('td')
+      return Array.from(cells).map((cell, i) =>
         i === 1 ? processDefinition(cell.textContent) : cell.textContent
       )
-    )
+    })
     .filter((d) => baseWord === d[0] && isAllowedLanguage(d))
 }
 
-const handler: NextApiHandler<SearchAPIResult> = async (req, res) => {
-  if (!req.query.search || req.method !== 'GET') return res.status(400).end()
-  const search = req.query.search as string
-  const { data } = await axios.get('/mobile.php', {
-    baseURL: 'https://dict.longdo.com',
-    params: {
-      search,
-    },
-  })
-  const dom = new JSDOM(data.replace(/\t/g, '').replace(/ {2}/g, ' '))
-  const document = (dom.window as unknown as Window).document.body
-  const docChildren = Array.from(document.children)
-  const resultTables: HTMLTableElement[] = Array.from(document.querySelectorAll('.result-table'))
-  const results: Dictionary[] = resultTables
-    .map((elem) => {
-      const dict = getNameFromResultTable(elem, docChildren)
+const isHTMLTable = (elem: Element): elem is HTMLTableElement => {
+  return elem.tagName === 'TABLE'
+}
+
+const handler = async (req: NextRequest) => {
+  const searchParams = req.nextUrl.searchParams
+  const search = searchParams.get('search')
+  if (typeof search !== 'string' || req.method !== 'GET')
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+  const data = await ky
+    .get('mobile.php', {
+      prefixUrl: 'https://dict.longdo.com',
+      searchParams: {
+        search,
+      },
+    })
+    .text()
+  const { document } = parseHTML(data.replace(/\t/g, '').replace(/ {2}/g, ' '))
+  const children = document.querySelectorAll('body > *')
+  const dictResults: Dictionary[] = []
+  for (var i = 0; i < children.length; i++) {
+    const elem = children[i]
+    if (isHTMLTable(elem) && elem.classList.contains('result-table')) {
+      const dict = children[i - 1].innerHTML
       const results = processTable(elem, search)
-      if (results.length === 0) return null
-      return {
+      if (results.length === 0) continue
+      dictResults.push({
         dict,
         results: dict.includes('Hope') ? processHopeDict(results[0][1]) : results.map((d) => d[1]),
-      }
-    })
-    .filter((r) => r !== null)
+      })
+    }
+  }
 
-  res.setHeader('cache-control', `public, max-age=${86400 / 2}, stale-while-revalidate=86400`)
-  res.status(results.length === 0 ? 404 : 200).send({
-    word: search,
-    data: results,
-  })
+  return NextResponse.json<SearchAPIResult>(
+    {
+      word: search,
+      data: dictResults,
+    },
+    {
+      status: dictResults.length === 0 ? 404 : 200,
+      headers: {
+        'cache-control': `public, max-age=${86400 / 2}, stale-while-revalidate=86400`,
+      },
+    }
+  )
 }
 
 export default handler
