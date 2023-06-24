@@ -1,16 +1,80 @@
 import { Fragment, useEffect, useState } from 'react'
 import { SearchAPIRequest, SearchAPIResult, WordsRequest } from '../types/dict'
 import { Disclosure } from '@headlessui/react'
-import { ChevronUpIcon, XIcon } from '@heroicons/react/solid'
+import { ChevronUpIcon, SearchIcon, XIcon } from '@heroicons/react/solid'
 import { default as _axios } from 'axios'
 import { ConcurrencyManager } from '../shared/axios-concurrency'
+
+import AutoCompleteInput from './input/autocomplete'
+import { useForm } from 'react-hook-form'
+import { useRouter } from 'next/router'
 
 const axios = _axios.create({})
 
 const MAX_CONCURRENT_REQUESTS = 5
 ConcurrencyManager(axios, MAX_CONCURRENT_REQUESTS)
 
-function SearchResult(word: WordsRequest & { index: number }) {
+type Props = WordsRequest & { index: number }
+
+function SearchEditForm({ index, ...word }: Props) {
+  const router = useRouter()
+  const { control, handleSubmit } = useForm<SearchAPIRequest>()
+  const onSubmit = (data: SearchAPIRequest) => {
+    const search = Array.isArray(router.query.search) ? router.query.search : [router.query.search]
+    search[index] = data.words[0].search
+    const url = new URLSearchParams()
+    search.map((word) => url.append('search', word))
+    router.replace('/?' + url.toString(), undefined, {
+      shallow: true,
+    })
+  }
+  return (
+    <form className="flex flex-row gap-2 flex-wrap items-start" onSubmit={handleSubmit(onSubmit)}>
+      <AutoCompleteInput
+        controller={{
+          name: `words.0.search`,
+          control: control,
+          rules: { required: true },
+        }}
+        type="text"
+        autoComplete="off"
+        placeholder={word.search}
+        className="w-full border border-gray-300 rounded-md focus:outline-1 focus:outline-red-500 focus:ring-1 px-3 py-2"
+      />
+
+      <button className="inline mt-1 btn bg-red-500 hover:bg-red-600 text-white">
+        <SearchIcon className="inline -mt-1 mr-2 h-4 w-4" />
+        Search
+      </button>
+    </form>
+  )
+}
+
+function SearchRemoveButton({ index, children }: Props & { children: React.ReactNode }) {
+  const router = useRouter()
+  const onClick = () => {
+    const search = Array.isArray(router.query.search) ? router.query.search : [router.query.search]
+    search.splice(index, 1)
+    if (search.length === 0) {
+      router.replace('/', undefined, {
+        shallow: true,
+      })
+      return
+    }
+    const url = new URLSearchParams()
+    search.map((word) => url.append('search', word))
+    router.replace('/?' + url.toString(), undefined, {
+      shallow: true,
+    })
+  }
+  return (
+    <button onClick={onClick} className="text-red-900 underline">
+      {children}
+    </button>
+  )
+}
+
+function SearchResult(word: Props) {
   const [data, setData] = useState<SearchAPIResult | undefined>()
 
   const [success, setSuccess] = useState<boolean | undefined>()
@@ -44,11 +108,14 @@ function SearchResult(word: WordsRequest & { index: number }) {
     wrapper:
       'flex items-center space-x-4 w-full px-4 py-2 text-sm font-medium text-left rounded-lg focus:outline-none focus-visible:ring',
   }
+
   const WordTitle = () => (
     <h4 className="text-lg flex-grow head-font">
       {word.index + 1}. {word.search}
     </h4>
   )
+
+  const onUpdate = () => {}
   if (success === undefined)
     return (
       <div
@@ -88,18 +155,24 @@ function SearchResult(word: WordsRequest & { index: number }) {
               {data ? (
                 <div className="flex flex-col gap-2">
                   {data.data.map((d) => (
-                    <>
+                    <Fragment key={d.dict}>
                       <span className="font-medium text-green-800">Definitions from {d.dict}</span>
                       <ul className="text-sm text-gray-600 space-y-2 list-disc list-inside">
                         {d.results.map((w, i) => (
                           <li key={i}>{w}</li>
                         ))}
                       </ul>
-                    </>
+                    </Fragment>
                   ))}
                 </div>
               ) : (
-                <span className="text-red-800">We couldn&apos;t find any results.</span>
+                <div className="text-red-800 flex flex-col gap-2">
+                  <span>
+                    We couldn&apos;t find any results. Edit or{' '}
+                    <SearchRemoveButton {...word}>remove</SearchRemoveButton> this search.
+                  </span>
+                  <SearchEditForm {...word} />
+                </div>
               )}
             </Disclosure.Panel>
           </>
