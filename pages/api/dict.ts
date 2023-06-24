@@ -80,7 +80,7 @@ const handler = async (req: NextRequest) => {
   for (var i = 0; i < children.length; i++) {
     const elem = children[i]
     if (isHTMLTable(elem) && elem.classList.contains('result-table')) {
-      const dict = children[i - 1].innerHTML
+      const dict = children[i - 1].textContent
       const results = processTable(elem, search)
       if (results.length === 0) continue
       dictResults.push({
