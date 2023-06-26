@@ -24,7 +24,7 @@ const processHopeDict = (definition: string): string[] => {
 }
 
 const isAllowedLanguage = (d: string[]) => {
-  const english = /([a-zA-Z])\w+/g
+  const english = /([a-zA-Z])+/g
   const thai = /([ก-๏])+/g
   // Adding EN-TH dictionary will result in too large payload.
   // Uncomment the condition if you know what you are doing!
@@ -50,7 +50,6 @@ const processTable = (table: HTMLTableElement, baseWord: string) => {
   return Array.from(rows)
     .map((row) => {
       const cells = row.querySelectorAll('td')
-      console.log(cells[0].textContent, cells[1].textContent)
       return Array.from(cells).map((cell, i) =>
         i === 1 ? processDefinition(cell.textContent) : cell.textContent
       )
@@ -83,7 +82,6 @@ const handler = async (req: NextRequest) => {
     if (isHTMLTable(elem) && elem.classList.contains('result-table')) {
       const dict = children[i - 1].textContent
       const results = processTable(elem, search)
-      console.log(search, dict, results)
       if (results.length === 0) continue
       dictResults.push({
         dict,
