@@ -1,34 +1,20 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# ParaDict
 
-## Getting Started
+![ParaDict](/public/og-image.png)
 
-First, run the development server:
+ParaDict is a single web page application for searching multiple words meaning more easily, by search for the words in parallel on [Longdo Dictionary](https://dict.longdo.com/) so that all search entries are returned immediately. It has a clean and minimal interface for ease of use.
 
-```bash
-npm run dev
-# or
-yarn dev
-```
+**This website is made for educational purposes only.** The source code of this website is licensed in MIT. The dictionaries used as a result from this website are licensed to their respective owners.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Features
+- Search for multiple words at once.
+- Easily bookmark the search results for later access by saving the results URL.
+- Returns an error when the given search entry is not found, and allow editing or removing the entry from the current result list.
+- Runs at the Edge for faster response time!
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
-
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
-
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Technologies
+- **Next.js** for web stack.
+- **HeadlessUI** for complex UI components.
+- **TailwindCSS** for styling.
+- **Remark** for parsing autocomplete markdown.
+- **LinkedDOM** for parsing HTML results from Longdo Dictionary API.
