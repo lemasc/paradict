@@ -50,11 +50,12 @@ const processTable = (table: HTMLTableElement, baseWord: string) => {
   return Array.from(rows)
     .map((row) => {
       const cells = row.querySelectorAll('td')
+      console.log(cells[0].textContent, cells[1].textContent)
       return Array.from(cells).map((cell, i) =>
         i === 1 ? processDefinition(cell.textContent) : cell.textContent
       )
     })
-    .filter((d) => baseWord === d[0] && isAllowedLanguage(d))
+    .filter((d) => baseWord.toLowerCase() === d[0].toLowerCase() && isAllowedLanguage(d))
 }
 
 const isHTMLTable = (elem: Element): elem is HTMLTableElement => {
@@ -82,6 +83,7 @@ const handler = async (req: NextRequest) => {
     if (isHTMLTable(elem) && elem.classList.contains('result-table')) {
       const dict = children[i - 1].textContent
       const results = processTable(elem, search)
+      console.log(search, dict, results)
       if (results.length === 0) continue
       dictResults.push({
         dict,
