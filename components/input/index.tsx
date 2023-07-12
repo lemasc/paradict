@@ -1,19 +1,21 @@
 import { MinusIcon, PlusIcon, SearchIcon, TrashIcon } from '@heroicons/react/solid'
 import { useFieldArray, useForm } from 'react-hook-form'
-import { SearchAPIRequest } from '../../types/dict'
+import { SearchAPIRequest, WordsRequest } from '../../types/dict'
 import { useBeforeunload } from 'react-beforeunload'
-import axios from 'axios'
 import AutoCompleteInput from './autocomplete'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+
+const defaultValues: SearchAPIRequest = {
+  words: [{ search: '' }],
+}
 
 export default function SearchInput({
+  words,
   onSubmit: _onSubmit,
 }: {
+  words?: WordsRequest[]
   onSubmit: (data: SearchAPIRequest) => void
 }) {
-  const defaultValues = {
-    words: [{ search: '' }],
-  }
   const [focusedIndex, setFocusedIndex] = useState(0)
   const inputArrayRefs = useRef<HTMLInputElement[]>([])
   const { control, handleSubmit, reset, watch } = useForm<SearchAPIRequest>({
@@ -28,6 +30,15 @@ export default function SearchInput({
     control,
     name: 'words',
   })
+
+  useEffect(() => {
+    if (words && words.length > 0) {
+      reset({ words })
+    } else {
+      reset()
+    }
+  }, [reset, words])
+
   const onSubmit = async (data: SearchAPIRequest) => {
     const words = data.words.filter((d) => d.search.trim() !== '')
     if (words.length > 0) {

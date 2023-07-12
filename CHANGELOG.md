@@ -1,11 +1,15 @@
 # ParaDict ChangeLog
 
+## v2.1 (20230712)
+- refactor: change query param from `search` to `q`
+- feat: add edit all search entries
+
 ## v2.0 (20230624)
 - refactor: update all dependencies
 - refactor: rewrite API for edge runtime
 - feat: edit and delete invalid search entries after submit
 
-## v1.3 (20200123)
+## v1.3 (20220123)
 - feat: Use cached results from recent words.
 
 ## v1.2 (20220108)

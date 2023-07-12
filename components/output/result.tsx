@@ -1,13 +1,14 @@
 import { Fragment, useEffect, useState } from 'react'
-import { SearchAPIRequest, SearchAPIResult, WordsRequest } from '../types/dict'
+import { SearchAPIRequest, SearchAPIResult, WordsRequest } from '../../types/dict'
 import { Disclosure } from '@headlessui/react'
-import { ChevronUpIcon, SearchIcon, XIcon } from '@heroicons/react/solid'
+import { ChevronUpIcon, SearchIcon } from '@heroicons/react/solid'
 import { default as _axios } from 'axios'
-import { ConcurrencyManager } from '../shared/axios-concurrency'
+import { ConcurrencyManager } from '../../shared/axios-concurrency'
 
-import AutoCompleteInput from './input/autocomplete'
+import AutoCompleteInput from '../input/autocomplete'
 import { useForm } from 'react-hook-form'
 import { useRouter } from 'next/router'
+import { normalizeQueryArray, SEARCH_QUERY_KEY, shallowReplace } from '../../shared/search-query'
 
 const axios = _axios.create({})
 
@@ -20,12 +21,10 @@ function SearchEditForm({ index, ...word }: Props) {
   const router = useRouter()
   const { control, handleSubmit } = useForm<SearchAPIRequest>()
   const onSubmit = (data: SearchAPIRequest) => {
-    const search = Array.isArray(router.query.search) ? router.query.search : [router.query.search]
+    const search = normalizeQueryArray(router.query?.[SEARCH_QUERY_KEY])
     search[index] = data.words[0].search
-    const url = new URLSearchParams()
-    search.map((word) => url.append('search', word))
-    router.replace('/?' + url.toString(), undefined, {
-      shallow: true,
+    shallowReplace(router, {
+      [SEARCH_QUERY_KEY]: search,
     })
   }
   return (
@@ -53,18 +52,14 @@ function SearchEditForm({ index, ...word }: Props) {
 function SearchRemoveButton({ index, children }: Props & { children: React.ReactNode }) {
   const router = useRouter()
   const onClick = () => {
-    const search = Array.isArray(router.query.search) ? router.query.search : [router.query.search]
+    const search = normalizeQueryArray(router.query?.[SEARCH_QUERY_KEY])
     search.splice(index, 1)
     if (search.length === 0) {
-      router.replace('/', undefined, {
-        shallow: true,
-      })
+      shallowReplace(router, null)
       return
     }
-    const url = new URLSearchParams()
-    search.map((word) => url.append('search', word))
-    router.replace('/?' + url.toString(), undefined, {
-      shallow: true,
+    shallowReplace(router, {
+      [SEARCH_QUERY_KEY]: search,
     })
   }
   return (
@@ -74,7 +69,7 @@ function SearchRemoveButton({ index, children }: Props & { children: React.React
   )
 }
 
-function SearchResult(word: Props) {
+export function SearchResult(word: Props) {
   const [data, setData] = useState<SearchAPIResult | undefined>()
 
   const [success, setSuccess] = useState<boolean | undefined>()
@@ -115,7 +110,6 @@ function SearchResult(word: Props) {
     </h4>
   )
 
-  const onUpdate = () => {}
   if (success === undefined)
     return (
       <div
@@ -179,34 +173,5 @@ function SearchResult(word: Props) {
         )}
       </Disclosure>
     </div>
-  )
-}
-
-export default function SearchOutput({
-  data,
-  onGoBack,
-}: {
-  data: SearchAPIRequest
-  onGoBack: () => void
-}) {
-  const ClearButton = () => (
-    <div className="flex flex-col items-center justify-center">
-      <button onClick={onGoBack} className="btn inline text-sm bg-gray-200 hover:bg-gray-300">
-        <XIcon className="inline -mt-1 mr-2 h-4 w-4" />
-        Clear Search Results
-      </button>
-    </div>
-  )
-  return (
-    <>
-      <h2 className="text-center font-medium">Search Results</h2>
-      <ClearButton />
-      <div className="w-full space-y-6">
-        {data.words?.map((word, i) => (
-          <SearchResult index={i} key={word.search} {...word} />
-        ))}
-      </div>
-      <ClearButton />
-    </>
   )
 }

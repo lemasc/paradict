@@ -1,9 +1,15 @@
 import Head from 'next/head'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import SearchInput from '../components/input'
 import SearchOutput from '../components/output'
-import { WordsRequest } from '../types/dict'
+import {
+  convertQueryToWordsRequest,
+  convertWordsRequestToQuery,
+  isSearchView,
+  shallowReplace,
+  shouldRefactorSearchQuery,
+} from '../shared/search-query'
 
 export default function Home() {
   const router = useRouter()
@@ -11,21 +17,22 @@ export default function Home() {
 
   useEffect(() => {
     window.scrollTo(0, 0)
-    if (router.query?.search) {
+    if (isSearchView(router.query)) {
       setShowResults(true)
     } else {
       setShowResults(false)
     }
   }, [router.query])
 
-  const convertToWordsRequest = (): WordsRequest[] => {
-    let search = router.query?.search
-    if (!search) return
-    if (!Array.isArray(search)) search = [search]
-    return search.map((w) => ({
-      search: w,
-    }))
-  }
+  useEffect(() => {
+    const refactoredQuery = shouldRefactorSearchQuery(router.query)
+    if (refactoredQuery) {
+      shallowReplace(router, refactoredQuery)
+    }
+  }, [router])
+
+  const wordsRequest = useMemo(() => convertQueryToWordsRequest(router.query), [router.query])
+
   return (
     <div className="py-8 px-4 lg:px-6 flex flex-col gap-2 min-h-screen h-full justify-center items-center">
       <Head>
@@ -40,20 +47,18 @@ export default function Home() {
       <main className={`flex flex-col gap-4 p-4 ${showResults ? 'max-w-2xl' : 'max-w-xl'} w-full`}>
         {!showResults ? (
           <SearchInput
+            words={wordsRequest}
             onSubmit={(results) => {
-              const url = new URLSearchParams()
-              results.words.map((word) => url.append('search', word.search))
-              router.replace('/?' + url.toString(), undefined, {
-                shallow: true,
-              })
+              const query = convertWordsRequestToQuery(results.words)
+              shallowReplace(router, query)
             }}
           />
         ) : (
           <SearchOutput
             data={{
-              words: convertToWordsRequest(),
+              words: wordsRequest,
             }}
-            onGoBack={() => router.replace('/', undefined, { shallow: true })}
+            onGoBack={() => shallowReplace(router, null)}
           />
         )}
       </main>
@@ -78,14 +83,22 @@ export default function Home() {
           </a>
         </span>
         <span className="flex flex-row gap-4 pt-2 content-font">
-          <span>Version 2.0 (20230624)</span>
+          <span>Version 2.1 (20230712)</span>
+          <a
+            href="https://github.com/lemasc/paradict"
+            rel="noreferrer noopener"
+            target="_blank"
+            className="text-gray-600 hover:text-gray-800 underline"
+          >
+            View on Github
+          </a>
           <a
             href="https://github.com/lemasc/paradict/blob/main/CHANGELOG.md"
             rel="noreferrer noopener"
             target="_blank"
             className="text-gray-600 hover:text-gray-800 underline"
           >
-            Change log
+            Changelog
           </a>
         </span>
       </footer>
