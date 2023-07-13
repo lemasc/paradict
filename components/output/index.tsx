@@ -21,7 +21,7 @@ const Buttons = ({ onGoBack }: Pick<SearchOutputProps, 'onGoBack'>) => {
     <div className="flex flex-row gap-4 items-center justify-center">
       <button onClick={onGoBack} className="btn inline text-sm bg-gray-200 hover:bg-gray-300">
         <XIcon className="inline -mt-1 mr-2 h-4 w-4" />
-        Clear Search Results
+        Clear<span className="hidden sm:inline md:ml-1">Search Results</span>
       </button>
 
       <button
@@ -29,7 +29,7 @@ const Buttons = ({ onGoBack }: Pick<SearchOutputProps, 'onGoBack'>) => {
         className="btn inline text-sm bg-blue-200 hover:bg-blue-300 text-blue-800"
       >
         <PencilIcon className="inline -mt-1 mr-2 h-4 w-4" />
-        Edit Search Results
+        Edit<span className="hidden sm:inline md:ml-1">Search Results</span>
       </button>
     </div>
   )

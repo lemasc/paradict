@@ -1,75 +1,19 @@
 import { Fragment, useEffect, useState } from 'react'
-import { SearchAPIRequest, SearchAPIResult, WordsRequest } from '../../types/dict'
+import { SearchAPIResult } from '../../types/dict'
 import { Disclosure } from '@headlessui/react'
-import { ChevronUpIcon, SearchIcon } from '@heroicons/react/solid'
+import { ChevronUpIcon } from '@heroicons/react/solid'
 import { default as _axios } from 'axios'
 import { ConcurrencyManager } from '../../shared/axios-concurrency'
 
-import AutoCompleteInput from '../input/autocomplete'
-import { useForm } from 'react-hook-form'
-import { useRouter } from 'next/router'
-import { normalizeQueryArray, SEARCH_QUERY_KEY, shallowReplace } from '../../shared/search-query'
+import { SearchResultProps } from './types'
+import { SearchResultCorrection } from './result-correction'
 
 const axios = _axios.create({})
 
 const MAX_CONCURRENT_REQUESTS = 5
 ConcurrencyManager(axios, MAX_CONCURRENT_REQUESTS)
 
-type Props = WordsRequest & { index: number }
-
-function SearchEditForm({ index, ...word }: Props) {
-  const router = useRouter()
-  const { control, handleSubmit } = useForm<SearchAPIRequest>()
-  const onSubmit = (data: SearchAPIRequest) => {
-    const search = normalizeQueryArray(router.query?.[SEARCH_QUERY_KEY])
-    search[index] = data.words[0].search
-    shallowReplace(router, {
-      [SEARCH_QUERY_KEY]: search,
-    })
-  }
-  return (
-    <form className="flex flex-row gap-2 flex-wrap items-start" onSubmit={handleSubmit(onSubmit)}>
-      <AutoCompleteInput
-        controller={{
-          name: `words.0.search`,
-          control: control,
-          rules: { required: true },
-        }}
-        type="text"
-        autoComplete="off"
-        placeholder={word.search}
-        className="w-full border border-gray-300 rounded-md focus:outline-1 focus:outline-red-500 focus:ring-1 px-3 py-2"
-      />
-
-      <button className="inline mt-1 btn bg-red-500 hover:bg-red-600 text-white">
-        <SearchIcon className="inline -mt-1 mr-2 h-4 w-4" />
-        Search
-      </button>
-    </form>
-  )
-}
-
-function SearchRemoveButton({ index, children }: Props & { children: React.ReactNode }) {
-  const router = useRouter()
-  const onClick = () => {
-    const search = normalizeQueryArray(router.query?.[SEARCH_QUERY_KEY])
-    search.splice(index, 1)
-    if (search.length === 0) {
-      shallowReplace(router, null)
-      return
-    }
-    shallowReplace(router, {
-      [SEARCH_QUERY_KEY]: search,
-    })
-  }
-  return (
-    <button onClick={onClick} className="text-red-900 underline">
-      {children}
-    </button>
-  )
-}
-
-export function SearchResult(word: Props) {
+export function SearchResult(word: SearchResultProps) {
   const [data, setData] = useState<SearchAPIResult | undefined>()
 
   const [success, setSuccess] = useState<boolean | undefined>()
@@ -146,7 +90,7 @@ export function SearchResult(word: Props) {
               </button>
             </Disclosure.Button>
             <Disclosure.Panel className="p-4 text-gray-800 content-font">
-              {data ? (
+              {!data ? (
                 <div className="flex flex-col gap-2">
                   {data.data.map((d) => (
                     <Fragment key={d.dict}>
@@ -160,13 +104,7 @@ export function SearchResult(word: Props) {
                   ))}
                 </div>
               ) : (
-                <div className="text-red-800 flex flex-col gap-2">
-                  <span>
-                    We couldn&apos;t find any results. Edit or{' '}
-                    <SearchRemoveButton {...word}>remove</SearchRemoveButton> this search.
-                  </span>
-                  <SearchEditForm {...word} />
-                </div>
+                <SearchResultCorrection {...word} />
               )}
             </Disclosure.Panel>
           </>

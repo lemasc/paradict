@@ -11,10 +11,12 @@ const defaultValues: SearchAPIRequest = {
 
 export default function SearchInput({
   words,
+  onClear,
   onSubmit: _onSubmit,
 }: {
   words?: WordsRequest[]
   onSubmit: (data: SearchAPIRequest) => void
+  onClear: () => void
 }) {
   const [focusedIndex, setFocusedIndex] = useState(0)
   const inputArrayRefs = useRef<HTMLInputElement[]>([])
@@ -77,9 +79,11 @@ export default function SearchInput({
     if (
       touchedFields.length !== 0 &&
       !confirm('Your current list contains data. Are you sure to clear all fields?')
-    )
+    ) {
       return
+    }
     reset(defaultValues)
+    onClear()
   }
 
   useBeforeunload((e) => touchedFields.length !== 0 && e.preventDefault())

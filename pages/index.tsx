@@ -52,6 +52,7 @@ export default function Home() {
               const query = convertWordsRequestToQuery(results.words)
               shallowReplace(router, query)
             }}
+            onClear={() => shallowReplace(router, null)}
           />
         ) : (
           <SearchOutput
@@ -82,7 +83,7 @@ export default function Home() {
             Longdo Dictionary
           </a>
         </span>
-        <span className="flex flex-row gap-4 pt-2 content-font">
+        <span className="flex flex-row flex-wrap gap-4 pt-2 content-font justify-center text-center">
           <span>Version 2.1 (20230712)</span>
           <a
             href="https://github.com/lemasc/paradict"
