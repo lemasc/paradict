@@ -7,20 +7,42 @@ export const config = {
   runtime: 'edge',
 }
 
+type HopeDictEntry = {
+  partOfSpeech: string
+  meaning: string
+}
+
 /**
  * Hope Dictionary returns a very long definition string.
  * Seperate and format it ourselves.
+ *
+ * However, since the raw results from the API itselves is not strictly formatted, it may parsed incorrectly and return some unexpected results.
  */
 const processHopeDict = (definition: string): string[] => {
-  const partOfSpeech = /([a-z])\.+/
-  return definition.split(' ').reduce((data, define) => {
+  const partOfSpeech = /([a-z])+[.,]?/
+  const thaiPronounciation = /\(([ก-๏].)+\)/
+  const results = definition.split(' ').reduce((data, define) => {
+    // The current index of each part of speech definition. Defaults to the previous item.
+    let currentIndex = data.length - 1
     if (partOfSpeech.test(define)) {
-      data.push(`(${define})`)
-    } else if (data.length !== 0) {
-      data[data.length - 1] = data[data.length - 1] + ' ' + define
+      // Part of speech indicates that this is a new definition.
+      // If the previous item already has a meaning, we create a new item.
+      if (data[currentIndex]?.meaning || currentIndex === -1) {
+        data.push({
+          partOfSpeech: '',
+          meaning: '',
+        })
+        currentIndex = currentIndex + 1
+      }
+      // Concat the part of speech to the current item.
+      data[currentIndex].partOfSpeech = data[currentIndex].partOfSpeech + define
+    } else if (!thaiPronounciation.test(define) && data[currentIndex]?.partOfSpeech) {
+      // Concat the meaning to the current item, excluding Thai pronounciation.
+      data[currentIndex].meaning = data[currentIndex].meaning + ' ' + define
     }
     return data
-  }, [])
+  }, [] as HopeDictEntry[])
+  return results.map((d) => `(${d.partOfSpeech}) ${d.meaning}`)
 }
 
 const isAllowedLanguage = (d: string[]) => {

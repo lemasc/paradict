@@ -84,7 +84,7 @@ export default function Home() {
           </a>
         </span>
         <span className="flex flex-row flex-wrap gap-4 pt-2 content-font justify-center text-center">
-          <span>Version 2.1 (20230712)</span>
+          <span>Version 2.2 (20230716)</span>
           <a
             href="https://github.com/lemasc/paradict"
             rel="noreferrer noopener"

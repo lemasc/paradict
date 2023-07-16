@@ -1,5 +1,8 @@
 # ParaDict ChangeLog
 
+## v2.2
+- fix: improve Hope Dictionary parsing for multiple part of speech definitions
+
 ## v2.1 (20230712)
 - refactor: change query param from `search` to `q`
 - feat: add edit all search entries
