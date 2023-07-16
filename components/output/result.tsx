@@ -90,7 +90,7 @@ export function SearchResult(word: SearchResultProps) {
               </button>
             </Disclosure.Button>
             <Disclosure.Panel className="p-4 text-gray-800 content-font">
-              {!data ? (
+              {data ? (
                 <div className="flex flex-col gap-2">
                   {data.data.map((d) => (
                     <Fragment key={d.dict}>
